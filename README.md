@@ -1,5 +1,7 @@
 # InkSplit Color Separations
 
+![](https://github.com/user-attachments/assets/8662d893-19cb-4474-a813-16ace795a925)
+
 A GIMP plug-in designed for screen printing workflows. This script takes a raster image and a specified color palette, reduces the image to the palette colors, and separates the colors into individual layers. Perfect for preparing artwork for screen printing!
 
 ## Features
