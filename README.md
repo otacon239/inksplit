@@ -1,4 +1,4 @@
-# Auto Color Separations
+# InkSplit Color Separations
 
 A GIMP plug-in designed for screen printing workflows. This script takes a raster image and a specified color palette, reduces the image to the palette colors, and separates the colors into individual layers. Perfect for preparing artwork for screen printing!
 
@@ -8,6 +8,12 @@ A GIMP plug-in designed for screen printing workflows. This script takes a raste
 - Automatically separates each color into its own layer.
 - Leverages the `colormath` library for accurate color conversions and matching.
 - Streamlines the screen printing preparation process.
+
+## Known Issues
+
+- Color matching is very slow and sometimes fails to find a match - Matches are occasionally inaccurate
+- Exporting currently does not work
+- Center alignment math seems to be off - needs more testing!
 
 ## Installation
 
@@ -31,8 +37,8 @@ A GIMP plug-in designed for screen printing workflows. This script takes a raste
 ## Usage
 
 1. Open your raster image in GIMP.
-2. Navigate to Filters > Auto Color Separations.
-3. Select your desired color palette from the list.
+2. Select your desired color pallete in the Palettes panel.
+3. Navigate to Filters > Auto Color Separations.
 4. The script will process the image, reduce it to the chosen palette, and separate the colors into individual layers.
 
 ## Contributing
