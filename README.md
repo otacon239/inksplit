@@ -79,6 +79,7 @@ This project is licensed under the GNU General Public License v3.0. You are free
 
 ## Acknowledgments
 - The colormath library for its excellent color conversion functionality.
+- denilsonsa for all their work in collecting the Pantone color palette (and several others).
 - The GIMP development team for creating such a versatile and open-source image editing platform.
 
 ## Contact
