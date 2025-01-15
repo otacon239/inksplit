@@ -1,12 +1,13 @@
 # InkSplit Color Separations
 
-![](https://github.com/user-attachments/assets/8662d893-19cb-4474-a813-16ace795a925)
+https://github.com/user-attachments/assets/8662d893-19cb-4474-a813-16ace795a925
 
-A GIMP plug-in designed for screen printing workflows. This script takes a raster image and a specified color palette, reduces the image to the palette colors, and separates the colors into individual layers. Perfect for preparing artwork for screen printing!
+A GIMP plug-in designed for screen printing color separations. This script takes a raster image and a color palette as input, reduces the image to the palette colors, and separates the colors into individual layers. 
 
 ## Features
 
 - Reduces raster images to a defined color palette.
+- Full set of offset settings made to work with any printer.
 - Automatically separates each color into its own layer.
 - Leverages the `colormath` library for accurate color conversions and matching.
 - Streamlines the screen printing preparation process.
@@ -25,23 +26,22 @@ A GIMP plug-in designed for screen printing workflows. This script takes a raste
    pip install colormath
    ```
 2. **Download the script**:
-        Clone or download this repository, and copy the auto_color_seps.py script to your GIMP plug-ins directory:
-        - On Linux: `~/.config/GIMP/2.10/plug-ins/`
-        - On Windows: `C:\Users\<YourUsername>\AppData\Roaming\GIMP\2.10\plug-ins\`
-3. Make the Script Executable (Linux/Mac):
-   Run the following command to ensure the script is executable:
+   Clone or download this repository, and copy the inksplit folder to your GIMP plug-ins directory. You can find this by going to `Edit > Preferences > Folders > Plug-Ins` and clicking the filing cabinet icon.
+   
+4. Make the Script Executable (Linux/Mac Only):
+   Run the following command in the inksplit to ensure the script is executable:
    ```
-   chmod +x auto_color_seps.py
+   chmod +x inksplit.py
    ```
-4. Restart GIMP:
+5. Restart GIMP:
    After installation, restart GIMP. The plug-in will appear under the Filters menu.
 
 ## Usage
 
-1. Open your raster image in GIMP.
+1. Open your image in GIMP and make sure what you are printing is on a transparent background.
 2. Select your desired color pallete in the Palettes panel.
-3. Navigate to Filters > Auto Color Separations.
-4. The script will process the image, reduce it to the chosen palette, and separate the colors into individual layers.
+3. Navigate to Filters > InkSplit Color Separations.
+6. The script will process the image, reduce it to the chosen palette, and separate the colors into individual layers.
 
 ## Contributing
 
