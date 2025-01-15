@@ -1,7 +1,7 @@
 # InkSplit Color Separations
 ![Inksplit Promo](https://github.com/user-attachments/assets/85098dbb-b7e2-4600-968b-3c8fee73b066)
 
-https://github.com/user-attachments/assets/8662d893-19cb-4474-a813-16ace795a925
+https://github.com/user-attachments/assets/f7d3cd21-4ab6-4918-b0a0-cdcfce39445f
 
 A GIMP plug-in designed for screen printing color separations. This script takes a raster image and a color palette as input, reduces the image to the palette colors, and separates the colors into individual layers. 
 
