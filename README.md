@@ -44,6 +44,7 @@ A GIMP plug-in designed for screen printing color separations. This script takes
 2. Select your desired color pallete in the Palettes panel.
      - This should be a limited color palette with the final colors you plan on printing with
      - It is recommended to have no more than the number of colors supported by your press for easy exporting
+     - Unless color matching is enabled, the names of colors in the palette will be used - Remember to name them for accurate registration labels
 4. Navigate to Filters > InkSplit Color Separations.
    - Here you will be presented ith the options window. Options function as follows:
       ![Screenshot 2025-01-15 at 10 36 45](https://github.com/user-attachments/assets/d21c38e5-494b-4184-b078-261626470b63)
