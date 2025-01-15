@@ -36,7 +36,7 @@ def find_closest_color_in_palette(target_color, search_palette):
     # Print or return the closest color
     return closest_color_name, closest_color, min_distance
 
-def inksplit(image, drawable, resolution, location, center_offset, vert_offset, print_width, print_height, generate_ub, ub_threshold, font, font_size, label_spacing, export, do_color_match):
+def inksplit(image, drawable, canvas_width, canvas_height, canvas_margin, resolution, location, center_offset, vert_offset, print_width, print_height, generate_ub, ub_threshold, font, font_size, label_spacing, export, do_color_match):
     # Start an undo group, so that all operations can be undone in one go
     original_file_name = os.path.splitext(os.path.basename(image.filename))[0]
     pdb.gimp_image_undo_group_start(image)
@@ -184,10 +184,10 @@ def inksplit(image, drawable, resolution, location, center_offset, vert_offset, 
     pdb.gimp_selection_none(image)
 
     # Step 9: Resize canvas
-    new_width = int(17.5 * resolution)
-    new_height = int(21.5 * resolution)
+    new_width = int(canvas_width * resolution)
+    new_height = int(canvas_height * resolution)
 
-    offset_y = int((1.25 * resolution) + (vert_offset * resolution))
+    offset_y = int((canvas_margin * resolution) + (vert_offset * resolution))
 
     layer_width = pdb.gimp_image_width(image)
     if location == 0: # Left
@@ -237,7 +237,6 @@ def inksplit(image, drawable, resolution, location, center_offset, vert_offset, 
 
     for layer in image.layers:
         pdb.gimp_layer_set_lock_alpha(layer, True)
-        #pdb.gimp_layer_set_visible(layer, False)
 
     # Step 12: Export to PostScript    
     if export:
@@ -245,7 +244,6 @@ def inksplit(image, drawable, resolution, location, center_offset, vert_offset, 
         
         for layer in color_layers:
             pdb.gimp_layer_set_visible(layer, True)
-            # temp_image = pdb.gimp_image_duplicate(img)
             temp_layer = pdb.gimp_image_merge_visible_layers(image, CLIP_TO_IMAGE)
             export_path = "{}_{}.ps".format(original_file_name, layer.name)
 
@@ -282,6 +280,9 @@ register(
     [
         (PF_IMAGE, "image", "Input image", None),
         (PF_DRAWABLE, "drawable", "Input drawable", None),
+        (PF_FLOAT, "canvas_width", "Canvas Width (in):", 17.5),
+        (PF_FLOAT, "canvas_height", "Canvas Height (in):", 21.5),
+        (PF_FLOAT, "canvas_margin", "Canvas Margin (in):", 1.25),
         (PF_INT, "resolution", "DPI:", 300),
         (PF_OPTION, "location", "Print Location:", 0, ["LEFT", "RIGHT", "CENTER"]),
         (PF_FLOAT, "center_offset", "Center Offset (in):", 4),
