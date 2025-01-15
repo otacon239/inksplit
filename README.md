@@ -1,4 +1,5 @@
 # InkSplit Color Separations
+![Inksplit Promo](https://github.com/user-attachments/assets/85098dbb-b7e2-4600-968b-3c8fee73b066)
 
 https://github.com/user-attachments/assets/8662d893-19cb-4474-a813-16ace795a925
 
@@ -43,19 +44,21 @@ A GIMP plug-in designed for screen printing color separations. This script takes
 2. Select your desired color pallete in the Palettes panel.
 3. Navigate to Filters > InkSplit Color Separations.
    - Here you will be presented ith the options window. Options function as follows:
-     ![Screenshot 2025-01-15 at 08 02 59](https://github.com/user-attachments/assets/08e3fa3c-d115-4122-8141-0d98bbb4d8af)
+      ![Screenshot 2025-01-15 at 10 36 45](https://github.com/user-attachments/assets/d21c38e5-494b-4184-b078-261626470b63)
+      - Canvas Width/Height/Margin: These are settings for the overall artboard/printer output size (Margin currently only affects vertical offset)
       - DPI: This is the output resolution of the screen printer
       - Print Location: This determines which direction the center offset goes
-      - Center Offset (in): This will offset the image from the center of the canvas - This currently doesn't seem to work correctly
-      - Vertical Offset (in): This will offset the image from the top of the canvas
+      - Center Offset (in): This will offset the image from the center of the canvas for left/right-chest prints
+      - Vertical Offset (in): This will offset the image from the top of the canvas (+ Canvas Margin)
       - Max Width/Height (in): These two work together to choose the lower of the two sizes
          - If size is left at zero on both, no scaling is done
          - If size is only set on one, the other is ignored
-      - Generate Underbase?: This will create an additional layer for a white underbase layer
-      - Underbase Lightness Threshold: This setting skips generating underbases for dark colors. The lower the value is, the more dark colors are exluded from the underbase
+         - If size is set on both, whichever scales smaller is used (to respect "max" values)
+      - Generate Underbase?: This will create an additional layer for a white underbase
+      - Underbase Lightness Threshold: This setting skips generating underbase for dark colors. The lower the value is, the more dark colors are exluded from the underbase. Useful for printing dark colors on dark shirts.
       - Font/Font Size/Label Spacing: These determine the properties of the registration labels that are generated
       - Export: *--CURRENTLY BROKEN--* This allows for automatic exporting of all layers at once
-      - Perform Color Match? (SLOW!): This will take advantage of the colormath library to do a simple color match against the Pantone color set
+      - Perform Color Match? (SLOW!): This will take advantage of the colormath library to do a simple color match against the Pantone color set. It will also automatically re-label layers to match their Pantone values and use these values in the registration.
 
 4. The script will process the image, reduce it to the chosen palette, and separate the colors into individual layers.
 
