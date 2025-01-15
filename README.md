@@ -42,7 +42,9 @@ A GIMP plug-in designed for screen printing color separations. This script takes
 
 1. Open your image in GIMP and make sure what you are printing is on a transparent background.
 2. Select your desired color pallete in the Palettes panel.
-3. Navigate to Filters > InkSplit Color Separations.
+     - This should be a limited color palette with the final colors you plan on printing with
+     - It is recommended to have no more than the number of colors supported by your press for easy exporting
+4. Navigate to Filters > InkSplit Color Separations.
    - Here you will be presented ith the options window. Options function as follows:
       ![Screenshot 2025-01-15 at 10 36 45](https://github.com/user-attachments/assets/d21c38e5-494b-4184-b078-261626470b63)
       - Canvas Width/Height/Margin: These are settings for the overall artboard/printer output size (Margin currently only affects vertical offset)
@@ -60,7 +62,7 @@ A GIMP plug-in designed for screen printing color separations. This script takes
       - Export: *--CURRENTLY BROKEN--* This allows for automatic exporting of all layers at once
       - Perform Color Match? (SLOW!): This will take advantage of the colormath library to do a simple color match against the Pantone color set. It will also automatically re-label layers to match their Pantone values and use these values in the registration.
 
-4. The script will process the image, reduce it to the chosen palette, and separate the colors into individual layers.
+5. The script will process the image, reduce it to the chosen palette, and separate the colors into individual layers.
 
 ## Contributing
 
