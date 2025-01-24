@@ -6,39 +6,64 @@ from colormath.color_conversions import convert_color
 from colormath.color_diff import delta_e_cie1976
 import os
 
-def find_closest_color_in_palette(target_color, search_palette):
-    palette_size, colors = pdb.gimp_palette_get_colors(search_palette)
+def find_closest_color_in_palette(target_color, search_palette, batch_size=100):
+    # Use batch processing for color match - Runs very slow without!
+    palette_size, _ = pdb.gimp_palette_get_colors(search_palette)
     rgb = sRGBColor(target_color.red, target_color.green, target_color.blue, is_upscaled=False)
     target_color_lab = convert_color(rgb, LabColor)
 
-    # Initialize minimum distance and best match color
     min_distance = float('inf')
     closest_color = None
     closest_color_name = None
-    
-    # Iterate through each color in the palette
-    for i in range(palette_size):
-        color_rgb = pdb.gimp_palette_entry_get_color(search_palette, i)  # Get the GimpRGB value by index
-        color_name = pdb.gimp_palette_entry_get_name(search_palette, i)  # Get the color name by index
-        
-        # Calculate Euclidean distance between target color and palette color
-        rgb = sRGBColor(color_rgb.red, color_rgb.green, color_rgb.blue, is_upscaled=False)
-        color_lab = convert_color(rgb, LabColor)
-        
-        distance = delta_e_cie1976(target_color_lab, color_lab)
-        
-        # Update closest color if this one is a better match
-        if distance < min_distance:
-            min_distance = distance
-            closest_color = color_rgb
-            closest_color_name = color_name
-    
-    # Print or return the closest color
+
+    for start_index in range(0, palette_size, batch_size):
+        end_index = min(start_index + batch_size, palette_size)
+
+        for i in range(start_index, end_index):
+            color_rgb = pdb.gimp_palette_entry_get_color(search_palette, i)
+            color_name = pdb.gimp_palette_entry_get_name(search_palette, i)
+
+            rgb = sRGBColor(color_rgb.red, color_rgb.green, color_rgb.blue, is_upscaled=False)
+            color_lab = convert_color(rgb, LabColor)
+
+            distance = delta_e_cie1976(target_color_lab, color_lab)
+
+            if distance < min_distance:
+                min_distance = distance
+                closest_color = color_rgb
+                closest_color_name = color_name
+
     return closest_color_name, closest_color, min_distance
 
-def inksplit(image, drawable, canvas_width, canvas_height, canvas_margin, resolution, location, center_offset, vert_offset, print_width, print_height, generate_ub, ub_threshold, font, font_size, label_spacing, export, do_color_match):
-    # Start an undo group, so that all operations can be undone in one go
+def inksplit(
+    image,
+    drawable,
+    auto_color_match,
+    colors_in_image,
+    palette, # User-chosen color palette
+    canvas_width,
+    canvas_height,
+    canvas_margin,
+    resolution, # DPI
+    dithering,
+    alpha_dither,
+    autocrop,
+    location, # Left/Right/Center
+    center_offset,
+    vert_offset,
+    print_width,
+    print_height,
+    generate_ub,
+    ub_threshold,
+    font,
+    font_size,
+    label_spacing,
+    export,
+    pms_color_match):
+    
     original_file_name = os.path.splitext(os.path.basename(image.filename))[0]
+    
+    # Start an undo group, so that all operations can be undone in one go
     pdb.gimp_image_undo_group_start(image)
 
     original_layer = image.active_layer
@@ -46,9 +71,11 @@ def inksplit(image, drawable, canvas_width, canvas_height, canvas_margin, resolu
 
     pdb.gimp_layer_add_alpha(original_layer)
 
-    # Step 1: Adjust scaling
+    # Adjust scaling
     if print_height or print_width: # Check if either print height or width is specified
-        pdb.plug_in_autocrop(image, drawable) # Autocrop the image to remove blank space around it
+        if autocrop:
+            pdb.plug_in_autocrop(image, drawable) # Autocrop the image to remove blank space around it
+
         pdb.gimp_image_set_resolution(image, resolution, resolution)
 
         width_orig = pdb.gimp_image_width(image)
@@ -82,14 +109,56 @@ def inksplit(image, drawable, canvas_width, canvas_height, canvas_margin, resolu
             if final_scale > 1:
                 pdb.gimp_message("Image was scaled up by a factor of " + "{:.2f}".format(final_scale) + "!")
 
-    # Step 2: Convert to Indexed color palette
-    current_palette = pdb.gimp_context_get_palette()  # Get the name of the current palette
-    pdb.gimp_image_convert_indexed(image, CONVERT_DITHER_FS, CUSTOM_PALETTE, 0, False, False, current_palette) # Floyd-Steinberg (normal) dithering
+    # Convert to Indexed color palette
+    if auto_color_match:
+        pdb.gimp_image_convert_indexed(
+            image,
+            CONVERT_DITHER_FS if dithering else CONVERT_DITHER_NONE,
+            CONVERT_PALETTE_GENERATE,
+            colors_in_image,
+            alpha_dither,
+            False,
+            "")
+        
+        # Create a new palette - Delete the old one if it already exists
+        current_palette = "inksplit_temp"
+        if current_palette in pdb.gimp_palettes_get_list(""):
+            pdb.gimp_palette_delete(current_palette)
+        
+        # Create a new, empty palette
+        pdb.gimp_palette_new(current_palette)
+        pdb.gimp_context_set_palette(current_palette)
 
-    # Step 3: Convert back to RGB - Several operations fail in Indexed mode
+        colormap = pdb.gimp_image_get_colormap(image)
+        num_colors = len(colormap[1]) // 3  # Each color is represented by 3 values (RGB)
+
+        print(colormap)
+        print(num_colors)
+        # Add colors to the new palette
+        for i in range(num_colors):
+            r = colormap[1][i * 3]   # Red
+            g = colormap[1][i * 3 + 1]  # Green
+            b = colormap[1][i * 3 + 2]  # Blue
+            color_name = "Color " + str(i+1)
+            pdb.gimp_palette_add_entry(current_palette, color_name, (r, g, b))
+    
+    else:
+        current_palette = palette # Get the name of the current palette
+        pdb.gimp_image_convert_indexed(
+            image,
+            CONVERT_DITHER_FS if dithering else CONVERT_DITHER_NONE,
+            CUSTOM_PALETTE,
+            0,
+            alpha_dither,
+            False,
+            current_palette)
+
+    # Convert back to RGB - Several operations require RGB mode
     pdb.gimp_image_convert_rgb(image)
 
-    # Step 4: Create Underbase layer
+    pdb.gimp_layer_set_lock_alpha(original_layer, True) # Prevent edits
+
+    # Create Underbase layer
     if generate_ub:
         ub_layer = pdb.gimp_layer_copy(original_layer, True) # Copy original layer
         pdb.gimp_image_add_layer(image, ub_layer, 0)
@@ -99,10 +168,7 @@ def inksplit(image, drawable, canvas_width, canvas_height, canvas_margin, resolu
         pdb.gimp_edit_fill(ub_layer, FOREGROUND_FILL) # Fill the new layer
         pdb.gimp_layer_set_lock_alpha(ub_layer, False) # Allow for removal of dark colors
 
-    pdb.gimp_image_set_active_layer(image, original_layer)
-    pdb.gimp_layer_set_lock_alpha(original_layer, True) # Prevent edits
-
-    # Step 6: Extract colors
+    # Extract colors
     palette_size, palette = pdb.gimp_palette_get_colors(current_palette)
     color_layers = [] # Keep track of which colors get generated
     color_matches = [] # Keep track of PMS color matches
@@ -111,7 +177,7 @@ def inksplit(image, drawable, canvas_width, canvas_height, canvas_margin, resolu
         color_rgb = pdb.gimp_palette_entry_get_color(current_palette, i)  # Get the GimpRGB value by index
         color_name = pdb.gimp_palette_entry_get_name(current_palette, i)  # Get the color name by index
 
-        # 6.1 Select by color        
+        # Select by color        
         pdb.gimp_context_set_antialias(False)
         pdb.gimp_context_set_feather(False)
         pdb.gimp_context_set_sample_transparent(False)
@@ -121,10 +187,10 @@ def inksplit(image, drawable, canvas_width, canvas_height, canvas_margin, resolu
         if pdb.gimp_selection_is_empty(image): # Skip empty colors
             continue        
 
-        # 6.2 Cut and paste to new layer
+        # Cut and paste to new layer
         pdb.gimp_edit_cut(original_layer)
 
-        # 6.3 Create a new layer with the same dimensions as the image
+        # Create a new layer with the same dimensions as the image
         new_layer = pdb.gimp_layer_new(
             image,                       # The image to which the layer will be added
             image.width,                 # Width of the new layer
@@ -135,23 +201,23 @@ def inksplit(image, drawable, canvas_width, canvas_height, canvas_margin, resolu
             0                            # Layer mode (0 for normal)
         )
 
-        # 6.4 Add the new layer to the image
+        # Add the new layer to the image
         pdb.gimp_image_insert_layer(image, new_layer, None, 0)
         
-        # 6.5 Paste the cut pixels into the new layer
+        # Paste the cut pixels into the new layer
         floating_sel = pdb.gimp_edit_paste(new_layer, False)
         
-        # 6.6 Anchor the floating selection to the new layer
+        # Anchor the floating selection to the new layer
         pdb.gimp_floating_sel_anchor(floating_sel)
 
-        # 6.7 Lock new layer alpha
+        # Lock new layer alpha
         pdb.gimp_layer_set_lock_alpha(new_layer, True)
 
-        # 6.8 Fill with black
+        # Fill with black
         pdb.gimp_context_set_foreground((0, 0, 0))  # Set foreground color to black
         pdb.gimp_edit_fill(new_layer, FOREGROUND_FILL)  # Fill with black
         
-        # 6.9 Remove color from underbase if below lightness threshold
+        # Remove color from underbase if below lightness threshold
         if generate_ub:
             # Convert RGB to sRGBColor (0-1 scale)
             rgb = sRGBColor(color_rgb.red, color_rgb.green, color_rgb.blue, is_upscaled=False)
@@ -168,22 +234,22 @@ def inksplit(image, drawable, canvas_width, canvas_height, canvas_margin, resolu
                 pdb.gimp_selection_layer_alpha(new_layer)
                 pdb.gimp_edit_clear(ub_layer)
 
-        # 6.10 Add color to final color list
+        # Add color to final color list
         color_layers.append(new_layer)
 
-        # 6.11 Perform color match
-        if do_color_match:
+        # Perform color match
+        if pms_color_match:
             match_color_name, match_color_rgb, distance = find_closest_color_in_palette(color_rgb,"graphic-design")
             color_matches.append(new_layer.name + " ({})\n".format(match_color_name))
             new_layer.name = match_color_name
 
-    # Step 8: Hide Original Layer
+    # Hide Original Layer
     pdb.gimp_layer_set_visible(original_layer, False)
 
-    # Step 8.1: Clear Selection
+    # Clear Selection
     pdb.gimp_selection_none(image)
 
-    # Step 9: Resize canvas
+    # Resize canvas
     new_width = int(canvas_width * resolution)
     new_height = int(canvas_height * resolution)
 
@@ -199,7 +265,7 @@ def inksplit(image, drawable, canvas_width, canvas_height, canvas_margin, resolu
     
     pdb.gimp_image_resize(image, new_width, new_height, offset_x, offset_y)
 
-    # Step 10: Add registration mark
+    # Add registration mark
     script_dir = os.path.dirname(__file__) # Get the directory where this script is located
     file_path = os.path.join(script_dir, "registration.png") # Build the path to the image in the same folder
     reg_layer = pdb.gimp_file_load_layer(image, file_path)
@@ -219,7 +285,7 @@ def inksplit(image, drawable, canvas_width, canvas_height, canvas_margin, resolu
 
     pdb.gimp_layer_set_offsets(reg_layer, reg_offset_x, reg_offset_y)
 
-    # Step 11: Add text labels
+    # Add text labels
     pdb.gimp_context_set_foreground((0, 0, 0)) # Set foreground color to black
 
     label_x_offset = reg_offset_x
@@ -238,33 +304,33 @@ def inksplit(image, drawable, canvas_width, canvas_height, canvas_margin, resolu
     for layer in image.layers:
         pdb.gimp_layer_set_lock_alpha(layer, True)
 
-    # Step 12: Export to PostScript    
+    # Export to PostScript
     if export:
+        # Start by hiding all layers
+        for layer in color_layers:
+            pdb.gimp_layer_set_visible(reg_layer, False)
+
+        # Re-enable Registration
         pdb.gimp_layer_set_visible(reg_layer, True)
-        
+
+        # Re-enable layers one at a time
         for layer in color_layers:
             pdb.gimp_layer_set_visible(layer, True)
-            temp_layer = pdb.gimp_image_merge_visible_layers(image, CLIP_TO_IMAGE)
+            temp_layer = pdb.gimp_image_merge_visible_layers(image, EXPAND_AS_NECESSARY)
+            print(layer.name)
             export_path = "{}_{}.ps".format(original_file_name, layer.name)
-
-            pdb.file_ps_save(image, temp_layer, export_path, export_path,
-                             0,  # output width, 0 keeps the current width
-                             0,  # output height, 0 keeps the current height
-                             0,  # X offset
-                             0,  # Y offset
-                             0,  # Inches
-                             0,  # Use width/height for aspect ratio
-                             0,  # rotation angle
-                             0,  # Don't use Encapsulated PostScript
-                             0,  # Don't use preview
-                             2)  # PostScript level 2
+            
+            pdb.file_ps_save(image, temp_layer, export_path, export_path, 0)
 
             pdb.gimp_layer_set_visible(layer, False)
         
     # Output color matches
-    if do_color_match:
+    if pms_color_match:
         pdb.gimp_message(''.join(color_matches))
 
+    if auto_color_match: # Remove temporary color palette if needed
+        pdb.gimp_palette_delete(current_palette)
+        
     # End undo group
     pdb.gimp_image_undo_group_end(image)
 
@@ -280,10 +346,16 @@ register(
     [
         (PF_IMAGE, "image", "Input image", None),
         (PF_DRAWABLE, "drawable", "Input drawable", None),
-        (PF_FLOAT, "canvas_width", "Canvas Width (in):", 17.5),
-        (PF_FLOAT, "canvas_height", "Canvas Height (in):", 21.5),
+        (PF_TOGGLE, "auto_color_match", "Auto Color Match?", False),
+        (PF_SLIDER, "colors_in_image", "Colors in Image (Auto Color Match Only):", 1, (1, 20, 1)),
+        (PF_PALETTE, "palette", "Color Palette:", 0),
+        (PF_FLOAT, "canvas_width", "Canvas Width (in):", 23),
+        (PF_FLOAT, "canvas_height", "Canvas Height (in):", 31),
         (PF_FLOAT, "canvas_margin", "Canvas Margin (in):", 1.25),
         (PF_INT, "resolution", "DPI:", 300),
+        (PF_TOGGLE, "dithering", "Dithering?", True),
+        (PF_TOGGLE, "alpha_dithering", "Alpha Dithering?", False),
+        (PF_TOGGLE, "autocrop", "Autocrop?", True),
         (PF_OPTION, "location", "Print Location:", 0, ["LEFT", "RIGHT", "CENTER"]),
         (PF_FLOAT, "center_offset", "Center Offset (in):", 4),
         (PF_FLOAT, "vert_offset", "Vertical Offset (in):", 0),
@@ -295,7 +367,7 @@ register(
         (PF_INT, "font_size", "Font Size (px):", 60),
         (PF_INT, "label_spacing", "Label Spacing (px):", 40),
         (PF_TOGGLE, "export", "Export?", False),
-        (PF_TOGGLE, "do_color_match", "Perform Color Match? (SLOW!)", False)
+        (PF_TOGGLE, "pms_color_match", "PMS Color Match?", False)
     ],
     [],
     inksplit,
