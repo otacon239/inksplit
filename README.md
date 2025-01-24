@@ -26,7 +26,7 @@ A GIMP plug-in designed for screen printing color separations. This script takes
    ```bash
    pip install colormath
    ```
-   Also download and install the Pantone color palletteto GIMP. Found here: https://github.com/denilsonsa/gimp-palettes/
+   Also download and install the Pantone color pallette to GIMP. Found here: https://github.com/denilsonsa/gimp-palettes/
 2. **Download the script**:
    Clone or download this repository, and copy the inksplit folder to your GIMP plug-ins directory. You can find this by going to `Edit > Preferences > Folders > Plug-Ins` and clicking the filing cabinet icon.
    
@@ -41,24 +41,29 @@ A GIMP plug-in designed for screen printing color separations. This script takes
 ## Usage
 
 1. Open your image in GIMP and make sure what you are printing is on a transparent background.
-2. Select your desired color pallete in the Palettes panel.
-3. Navigate to Filters > InkSplit Color Separations.
-   - Here you will be presented ith the options window. Options function as follows:
-      ![Screenshot 2025-01-15 at 10 36 45](https://github.com/user-attachments/assets/d21c38e5-494b-4184-b078-261626470b63)
+2. Navigate to Filters > InkSplit Color Separations.
+   - Here you will be presented with the options window. Options function as follows:
+      ![InkSplit Options](https://github.com/user-attachments/assets/b4ba46b4-4215-4ad4-91ac-efc6ff73a223)
+      - Auto Color Match: Automatically flatten the image to the amount of colors specified
+      - Colors in Image: The amount of colors in the image to reduce to (not including underbase)
+      - Color Palette: If Auto Color Match is disabled, you can specify a custom color palette
       - Canvas Width/Height/Margin: These are settings for the overall artboard/printer output size (Margin currently only affects vertical offset)
       - DPI: This is the output resolution of the screen printer
-      - Print Location: This determines which direction the center offset goes
-      - Center Offset (in): This will offset the image from the center of the canvas for left/right-chest prints
-      - Vertical Offset (in): This will offset the image from the top of the canvas (+ Canvas Margin)
+      - Dithering: Enables gradient dithering using Floyd-Steinberg distribution
+      - Alpha Dithering: Similar to dithering, but applies to transparency gradients
+      - Autocrop?: Automatically crop empty space around the image before resizing
+      - Print Location: This determines which direction the center offset goes - Useful for left/right chest decorations
+      - Center Offset (in): This determines the amount of offset applied to print location
+      - Vertical Offset (in): This will offset the image from the top of the canvas (+ Canvas Margin) - Currently only accepts a positive value to lower your design
       - Max Width/Height (in): These two work together to choose the lower of the two sizes
          - If size is left at zero on both, no scaling is done
          - If size is only set on one, the other is ignored
          - If size is set on both, whichever scales smaller is used (to respect "max" values)
       - Generate Underbase?: This will create an additional layer for a white underbase
-      - Underbase Lightness Threshold: This setting skips generating underbase for dark colors. The lower the value is, the more dark colors are exluded from the underbase. Useful for printing dark colors on dark shirts.
+      - Underbase Lightness Threshold: This setting skips generating underbase for dark colors. The lower the value is, the more dark colors are exlcuded from the underbase. Useful for printing dark colors on dark shirts.
       - Font/Font Size/Label Spacing: These determine the properties of the registration labels that are generated
       - Export: *--CURRENTLY BROKEN--* This allows for automatic exporting of all layers at once
-      - Perform Color Match? (SLOW!): This will take advantage of the colormath library to do a simple color match against the Pantone color set. It will also automatically re-label layers to match their Pantone values and use these values in the registration.
+      - PMS Color Match?: This will take advantage of the colormath library and [GIMP color palettes](https://github.com/denilsonsa/gimp-palettes/) to do a basic color match against the Pantone color set. It will also automatically re-label layers to match their Pantone values and use these values in the registration.
 
 4. The script will process the image, reduce it to the chosen palette, and separate the colors into individual layers.
 
