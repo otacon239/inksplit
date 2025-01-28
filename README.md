@@ -6,7 +6,6 @@ https://github.com/user-attachments/assets/8662d893-19cb-4474-a813-16ace795a925
 A GIMP plug-in designed for screen printing color separations. This script takes a raster image and a color palette as input, reduces the image to the palette colors, and separates the colors into individual layers. 
 
 ## Features
-
 - Reduces raster images to a defined color palette.
 - Full set of offset settings made to work with any printer.
 - Automatically separates each color into its own layer.
@@ -14,28 +13,33 @@ A GIMP plug-in designed for screen printing color separations. This script takes
 - Streamlines the screen printing preparation process.
 
 ## Known Issues
-
-- Color matching is very slow and sometimes fails to find a match - Matches are occasionally inaccurate
 - Exporting currently does not work
-- Center alignment math seems to be off - needs more testing!
 
 ## Installation
-
 1. **Dependencies**:  
-   Ensure you have Python 2.x installed as this script relies on Python 2 and GIMP's `gimpfu` module. Additionally, install the `colormath` library:
-   ```bash
-   pip install colormath
-   ```
-   Also download and install the Pantone color pallette to GIMP. Found here: https://github.com/denilsonsa/gimp-palettes/
+   ## colormath
+   - You will need to install the `colormath` library via GIMP's Python by performing the following steps:
+        1. Find the Python path by going to `Filters > Python-fu > Console` and run the following:
+           ```python
+           import sys
+           print(sys.executable)
+           ```
+        2. In your terminal, cd to this directory and run:
+           ```
+           python -m pip install colormath
+           ```
+   ## Pantone color palette
+   - To install the Pantone color palette, first download the palette here: https://github.com/denilsonsa/gimp-palettes/blob/master/palettes/Pantone.gpl
+      - This file will need to be placed in the App Data/Config directory. You can find this by going to `Preferences > Folders > Palettes`. You may need to create this folder if it does not already exist.
 2. **Download the script**:
    Clone or download this repository, and copy the inksplit folder to your GIMP plug-ins directory. You can find this by going to `Edit > Preferences > Folders > Plug-Ins` and clicking the filing cabinet icon.
    
-4. Make the Script Executable (Linux/Mac Only):
+3. Make the Script Executable (Linux/Mac Only):
    Run the following command in the inksplit to ensure the script is executable:
    ```
    chmod +x inksplit.py
    ```
-5. Restart GIMP:
+4. Restart GIMP:
    After installation, restart GIMP. The plug-in will appear under the Filters menu.
 
 ## Usage
@@ -63,9 +67,17 @@ A GIMP plug-in designed for screen printing color separations. This script takes
       - Underbase Lightness Threshold: This setting skips generating underbase for dark colors. The lower the value is, the more dark colors are exlcuded from the underbase. Useful for printing dark colors on dark shirts.
       - Font/Font Size/Label Spacing: These determine the properties of the registration labels that are generated
       - Export: *--CURRENTLY BROKEN--* This allows for automatic exporting of all layers at once
-      - PMS Color Match?: This will take advantage of the colormath library and [GIMP color palettes](https://github.com/denilsonsa/gimp-palettes/) to do a basic color match against the Pantone color set. It will also automatically re-label layers to match their Pantone values and use these values in the registration.
+      - Best Fit Color Match?: This will take advantage of the colormath library to do a basic color match against the selected Best Fit Palette. It will also automatically re-label layers to match the color labels found in the Best Fit Palette and use these values in the registration.
+      - Best Fit Palette: This determines what color set is used to match color names against
 
-4. The script will process the image, reduce it to the chosen palette, and separate the colors into individual layers.
+4. The script will perform the following steps, in order:
+   1. Adjust image scaling
+   2. Reduce to color palette
+   3. Create underbase
+   4. Extract colors & color match
+   5. Remove dark colors from underbase
+   6. Resize canvas
+   7. Add registration marks
 
 ## Contributing
 
