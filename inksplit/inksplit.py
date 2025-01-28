@@ -239,7 +239,7 @@ def inksplit(
         color_layers.append(new_layer)
 
         # Perform color match
-        if :
+        if best_fit_color_match:
             match_color_name, match_color_rgb, distance = find_closest_color_in_palette(color_rgb, best_fit_palette)
             best_fit_color_matches.append(new_layer.name + " ({})\n".format(match_color_name))
             new_layer.name = match_color_name
