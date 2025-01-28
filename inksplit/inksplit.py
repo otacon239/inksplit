@@ -59,7 +59,8 @@ def inksplit(
     font_size,
     label_spacing,
     export,
-    pms_color_match):
+    pms_color_match,
+    best_fit_palette):
     
     original_file_name = os.path.splitext(os.path.basename(image.filename))[0]
     
@@ -239,7 +240,7 @@ def inksplit(
 
         # Perform color match
         if pms_color_match:
-            match_color_name, match_color_rgb, distance = find_closest_color_in_palette(color_rgb,"graphic-design")
+            match_color_name, match_color_rgb, distance = find_closest_color_in_palette(color_rgb, best_fit_palette)
             color_matches.append(new_layer.name + " ({})\n".format(match_color_name))
             new_layer.name = match_color_name
 
@@ -348,7 +349,7 @@ register(
         (PF_DRAWABLE, "drawable", "Input drawable", None),
         (PF_TOGGLE, "auto_color_match", "Auto Color Match?", False),
         (PF_SLIDER, "colors_in_image", "Colors in Image (Auto Color Match Only):", 1, (1, 20, 1)),
-        (PF_PALETTE, "palette", "Color Palette:", 0),
+        (PF_PALETTE, "palette", "Color Palette:", ""),
         (PF_FLOAT, "canvas_width", "Canvas Width (in):", 23),
         (PF_FLOAT, "canvas_height", "Canvas Height (in):", 31),
         (PF_FLOAT, "canvas_margin", "Canvas Margin (in):", 1.25),
@@ -367,7 +368,8 @@ register(
         (PF_INT, "font_size", "Font Size (px):", 60),
         (PF_INT, "label_spacing", "Label Spacing (px):", 40),
         (PF_TOGGLE, "export", "Export?", False),
-        (PF_TOGGLE, "pms_color_match", "PMS Color Match?", False)
+        (PF_TOGGLE, "pms_color_match", "PMS Color Match?", False),
+        (PF_PALETTE, "best_fit_palette", "Best Fit Palette: ", "Pantone colors")
     ],
     [],
     inksplit,
