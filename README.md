@@ -47,7 +47,7 @@ A GIMP plug-in designed for screen printing color separations. This script takes
 1. Open your image in GIMP and make sure what you are printing is on a transparent background.
 2. Navigate to Filters > InkSplit Color Separations.
    - Here you will be presented with the options window. Options function as follows:
-      ![InkSplit Options](https://github.com/user-attachments/assets/e439dc8b-b189-4eeb-b398-fb55d0c3d154)
+      ![InkSplit Options](https://github.com/user-attachments/assets/f5502f76-b34f-4e2c-9d36-30cabae742b3)
       - Auto Color Match: Automatically flatten the image to the amount of colors specified
       - Colors in Image: The amount of colors in the image to reduce to (not including underbase)
       - Color Palette: If Auto Color Match is disabled, you can specify a custom color palette
