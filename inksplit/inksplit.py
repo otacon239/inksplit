@@ -59,7 +59,7 @@ def inksplit(
     font_size,
     label_spacing,
     export,
-    pms_color_match,
+    best_fit_color_match,
     best_fit_palette):
     
     original_file_name = os.path.splitext(os.path.basename(image.filename))[0]
@@ -172,7 +172,7 @@ def inksplit(
     # Extract colors
     palette_size, palette = pdb.gimp_palette_get_colors(current_palette)
     color_layers = [] # Keep track of which colors get generated
-    color_matches = [] # Keep track of PMS color matches
+    best_fit_color_matches = [] # Keep track of best fit color matches
 
     for i in range(palette_size): # For each color in the palette
         color_rgb = pdb.gimp_palette_entry_get_color(current_palette, i)  # Get the GimpRGB value by index
@@ -239,9 +239,9 @@ def inksplit(
         color_layers.append(new_layer)
 
         # Perform color match
-        if pms_color_match:
+        if :
             match_color_name, match_color_rgb, distance = find_closest_color_in_palette(color_rgb, best_fit_palette)
-            color_matches.append(new_layer.name + " ({})\n".format(match_color_name))
+            best_fit_color_matches.append(new_layer.name + " ({})\n".format(match_color_name))
             new_layer.name = match_color_name
 
     # Hide Original Layer
@@ -326,8 +326,8 @@ def inksplit(
             pdb.gimp_layer_set_visible(layer, False)
         
     # Output color matches
-    if pms_color_match:
-        pdb.gimp_message(''.join(color_matches))
+    if best_fit_color_match:
+        pdb.gimp_message(''.join(best_fit_color_matches))
 
     if auto_color_match: # Remove temporary color palette if needed
         pdb.gimp_palette_delete(current_palette)
@@ -368,7 +368,7 @@ register(
         (PF_INT, "font_size", "Font Size (px):", 60),
         (PF_INT, "label_spacing", "Label Spacing (px):", 40),
         (PF_TOGGLE, "export", "Export?", False),
-        (PF_TOGGLE, "pms_color_match", "PMS Color Match?", False),
+        (PF_TOGGLE, "best_fit_color_match", "Best Fit Color Match?", False),
         (PF_PALETTE, "best_fit_palette", "Best Fit Palette: ", "Pantone colors")
     ],
     [],
