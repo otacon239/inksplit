@@ -78,6 +78,15 @@ A GIMP plug-in designed for screen printing color separations. This script takes
    5. Remove dark colors from underbase
    6. Resize canvas
    7. Add registration marks
+  
+## Planned Changes and Additions Before Intial Release
+
+- [ ] Separate system settings into a separate window
+- [ ] Allow for persistent settings
+- [ ] Break settings into Basic, Intermediate, Advanced
+- [ ] Add custom registration mark option
+- [ ] Error checking
+- [ ] Break code into more organized and modular functions
 
 ## Contributing
 
